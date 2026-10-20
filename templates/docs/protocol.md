@@ -7,7 +7,7 @@ Un seul écrivain par fichier, pour éviter les conflits Git.
 | `brief.md`, `tasks/T-NNN.md`, `state.json` | A | B, C |
 | `specs/*.md` | B | A, C |
 | `reports/T-NNN.md`, `src/**` | C | A, B |
-| `budget.json` | l'utilisateur (script) | A, B, C |
+| `budget.json` | le moniteur (saisi par l'utilisateur) | A, B, C |
 
 Chaque agent fait `git pull --rebase` avant d'agir et `git push` après chaque livrable.
 

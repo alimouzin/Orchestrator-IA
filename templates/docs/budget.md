@@ -1,6 +1,6 @@
 # Surveillance du quota (plan Pro)
 
-Le quota est celui de l'abonnement (fenêtre de session + plafond hebdomadaire), partagé entre **toutes** les sessions du compte. Les agents ne peuvent pas le lire eux-mêmes depuis le cloud : l'utilisateur le relève avec `/usage` (dans Claude Code) et le publie avec `scripts/set-budget.ps1`.
+Le quota est celui de l'abonnement (fenêtre de session + plafond hebdomadaire), partagé entre **toutes** les sessions du compte. Les agents ne peuvent pas le lire eux-mêmes depuis le cloud : l'utilisateur le relève avec `/usage` (dans Claude Code) et le saisit dans la fenêtre « monitor » (touche `b`), qui publie `budget.json`.
 
 ## `budget.json`
 
