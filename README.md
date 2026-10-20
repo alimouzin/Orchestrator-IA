@@ -27,7 +27,11 @@ git clone <ce repo> ; cd Orchestrator-IA
 
 ## Scripts
 
-- `watch.ps1 -Role B|C` : boucle `git pull`, lit le quota, détecte les tâches du rôle et lance `claude -p --model opus|sonnet` (`-Mode auto`) ou copie le prompt dans le presse-papiers (`-Mode notify`). Deux essais max par tâche/statut.
+- `watch.ps1 -Role B|C` : boucle `git pull`, lit le quota, détecte les tâches du rôle puis, selon `-Mode` :
+  - `inject` (défaut) : dépose un message dans `.git\orchestrator-inbox` ; l'extension `vscode-extension/` (chargée par `code --extensionDevelopmentPath`) le **tape dans le terminal « Claude B/C »** de VS Code : `/clear`, puis le prompt, Entrée envoyée séparément. C'est la session ouverte qui travaille (computer use possible pour C) ;
+  - `auto` : lance `claude -p --model opus|sonnet` en non interactif ;
+  - `notify` : copie le prompt dans le presse-papiers.
+  Renvoi après 25 min sans changement de statut, 2 essais max par tâche/statut.
 - `monitor.ps1` : tableau de bord (état, tâches, quota). Touche `b` pour saisir les pourcentages de `/usage`; il publie `budget.json`.
 
 ## Quota
@@ -37,6 +41,7 @@ Seuils (réserve ≈ 10 %) : < 70 % normal ; 70-85 % plus de travail Opus ; 85-9
 ## À savoir
 
 - Non testé sur une vraie machine Windows : les scripts sont écrits pour PowerShell 5.1+ ; à valider au premier lancement.
-- Le watcher en mode `auto` lance des sessions Claude **non interactives** à côté de la session ouverte dans VS Code. Ne donne pas de travail à la session ouverte pendant ce temps, ou utilise `-Mode notify`.
-- Le computer use (clics) n'est a priori pas disponible en mode non interactif : pour la validation visuelle par C, utilise la session ouverte.
+- Mode `inject` : le watcher ne sait pas si Claude est occupé. Il attend 20 s avant d'envoyer, puis ne renvoie rien tant que le statut n'a pas changé (25 min). Si tu parles toi-même à la session au même moment, les messages se mélangent.
+- Le terminal Claude doit s'appeler « Claude B » / « Claude C » (c'est le nom de la tâche créée par `setup.ps1`) ; sinon l'extension affiche un avertissement.
+- Mode `auto` : sessions non interactives, computer use a priori indisponible.
 - Côté cloud, la session A doit travailler sur la même branche que celle choisie dans `setup.ps1`.

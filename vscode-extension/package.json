@@ -1,0 +1,10 @@
+{
+  "name": "orchestrator-bridge",
+  "displayName": "Orchestrator Bridge",
+  "description": "Tape dans le terminal Claude les messages déposés dans .git/orchestrator-inbox.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "engines": { "vscode": "^1.80.0" },
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js"
+}

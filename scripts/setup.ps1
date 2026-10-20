@@ -8,7 +8,7 @@ param(
   [string]$RepoUrl,
   [string]$BaseDir,
   [string]$Branch,
-  [ValidateSet('auto', 'notify')][string]$Mode = 'auto',
+  [ValidateSet('inject', 'auto', 'notify')][string]$Mode = 'inject',
   [switch]$LaunchOnly,
   [switch]$NoLaunch,
   [switch]$Yes
@@ -164,9 +164,10 @@ foreach ($r in 'B', 'C') {
 # --- Lancement -----------------------------------------------------------
 if ($NoLaunch) { Write-Log 'setup' 'Prêt (lancement ignoré).' Green; exit 0 }
 if ($hasCode) {
-  & code -n $dirs.B
-  & code -n $dirs.C
-  Write-Log 'setup' 'VS Code ouvert sur B et C. À la première ouverture, autorise « Allow Automatic Tasks » : Claude et le watcher démarrent alors tout seuls dans le terminal.' Green
+  $ext = Join-Path $Toolkit 'vscode-extension'
+  & code -n --extensionDevelopmentPath $ext $dirs.B
+  & code -n --extensionDevelopmentPath $ext $dirs.C
+  Write-Log 'setup' 'VS Code ouvert sur B et C (extension Orchestrator Bridge chargée). À la première ouverture, autorise « Allow Automatic Tasks » : Claude et le watcher démarrent alors tout seuls dans le terminal.' Green
 }
 $mon = Join-Path $PSScriptRoot 'monitor.ps1'
 Start-Process powershell -ArgumentList @('-NoExit', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$mon`"", '-RepoDir', "`"$($dirs.M)`"")
