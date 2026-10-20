@@ -16,3 +16,6 @@ Tu es l'interface unique avec l'utilisateur et le chef d'orchestre. Tu ne codes 
 
 ## Habitudes
 `git pull --rebase` avant de lire, `git push` après chaque écriture. Réponses courtes, en français.
+
+## Pause
+Lis `control.json` avant chaque délégation. Si `paused` est vrai, ne délègue rien et réponds seulement à l'utilisateur. Si l'utilisateur te demande de mettre en pause ou de reprendre, modifie `control.json` (`paused`, `reason`, `updated`), commit et push, et confirme.

@@ -85,3 +85,34 @@ function Get-Tasks([string]$RepoDir) {
     [pscustomobject]@{ Id = $_.BaseName; Status = $s; Rel = "tasks/$($_.Name)" }
   })
 }
+
+# --- Pause -------------------------------------------------------------
+# Pause = control.json (versionné, vu par A dans le cloud) OU fichier-drapeau local (effet immédiat sur ce PC).
+function Get-Control([string]$RepoDir, [string]$PauseFile) {
+  $paused = $false; $reason = ''
+  $c = Read-Json (Join-Path $RepoDir 'control.json')
+  if ($c -and $c.paused -eq $true) { $paused = $true; $reason = [string]$c.reason }
+  if ($PauseFile -and (Test-Path $PauseFile)) { $paused = $true; if (-not $reason) { $reason = 'pause locale' } }
+  [pscustomobject]@{ Paused = $paused; Reason = $reason }
+}
+
+function Set-Control([string]$RepoDir, [string]$PauseFile, [bool]$Paused, [string]$Reason = '') {
+  if ($PauseFile) {
+    if ($Paused) { Write-Utf8 $PauseFile $Reason } elseif (Test-Path $PauseFile) { Remove-Item $PauseFile -Force }
+  }
+  $now = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+  $p = 'false'; if ($Paused) { $p = 'true' }
+  Write-Utf8 (Join-Path $RepoDir 'control.json') ("{{ ""paused"": {0}, ""reason"": ""{1}"", ""updated"": ""{2}"" }}`n" -f $p, $Reason.Replace('"', "'"), $now)
+  Invoke-Git $RepoDir @('add', 'control.json') | Out-Null
+  Invoke-Git $RepoDir @('commit', '-q', '-m', "control: paused=$p") | Out-Null
+  Push-Repo $RepoDir
+}
+
+# Dépose des lignes dans la boîte de réception de l'extension (tapées dans le terminal Claude de ce dossier).
+function Send-ToClaude([string]$WorkDir, [string[]]$Lines) {
+  $inbox = Join-Path $WorkDir '.git\orchestrator-inbox'
+  New-Item -ItemType Directory -Force -Path $inbox | Out-Null
+  $name = (Get-Date).ToString('yyyyMMddHHmmssfff')
+  Write-Utf8 (Join-Path $inbox "$name.tmp") ($Lines -join "`n")
+  Move-Item (Join-Path $inbox "$name.tmp") (Join-Path $inbox "$name.txt")
+}

@@ -29,6 +29,12 @@ async function deliver(file, out) {
   }
   term.show(true);
   for (const line of lines) {
+    if (line === '<ESC>') {
+      out.appendLine('> [Échap : interruption]');
+      term.sendText('\x1b', false);
+      await sleep(1200);
+      continue;
+    }
     out.appendLine('> ' + line);
     term.sendText(line, false);
     await sleep(400);

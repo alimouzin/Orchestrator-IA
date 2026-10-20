@@ -34,6 +34,10 @@ git clone <ce repo> ; cd Orchestrator-IA
   Renvoi après 25 min sans changement de statut, 2 essais max par tâche/statut.
 - `monitor.ps1` : tableau de bord (état, tâches, quota). Touche `b` pour saisir les pourcentages de `/usage`; il publie `budget.json`.
 
+## Pause
+
+Dans la fenêtre **monitor** : `p` pause douce (rien de nouveau, les agents finissent leur étape), `x` pause + arrêt immédiat (envoie Échap aux sessions Claude de B et C puis leur demande de commiter leur état), `r` reprendre. La pause est écrite dans `control.json` (vue par A dans le cloud et par les watchers après `git pull`) et dans un fichier-drapeau local `~\orchestrator\orchestrator.pause` (effet immédiat sur ce PC). Tu peux aussi dire « mets en pause » à A, qui modifie `control.json`.
+
 ## Quota
 
 Seuils (réserve ≈ 10 %) : < 70 % normal ; 70-85 % plus de travail Opus ; 85-90 % rien de nouveau ; ≥ 90 % arrêt. Les chiffres viennent de `/usage` saisi à la main (impossible à lire automatiquement) ; s'ils ont plus de 2 h, les watchers attendent.

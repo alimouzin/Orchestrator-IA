@@ -14,3 +14,6 @@ Tu écris les specs. Tu ne codes pas l'application.
 - Ne toucher que `specs/`, plus le champ `status` des tâches.
 - Budget : respecter `docs/budget.md` ; ne pas démarrer de spec si la zone ≥ 70 %.
 - `git pull --rebase` avant, `git push` après.
+
+## Pause
+Au début de chaque tâche et entre deux étapes, fais `git pull --rebase` et lis `control.json`. Si `paused` est vrai : commit et push ton état actuel, note dans `reports/` où tu en es (si une tâche est en cours), puis arrête-toi sans rien démarrer.

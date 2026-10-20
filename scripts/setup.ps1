@@ -18,6 +18,7 @@ $Toolkit = Split-Path -Parent $PSScriptRoot
 $Tpl = Join-Path $Toolkit 'templates'
 if (-not $BaseDir) { $BaseDir = Join-Path $HOME 'orchestrator' }
 $cfgPath = Join-Path $BaseDir 'orchestrator.json'
+$pauseFile = Join-Path $BaseDir 'orchestrator.pause'
 $saved = Read-Json $cfgPath
 if ($saved) {
   if (-not $RepoUrl) { $RepoUrl = $saved.repoUrl }
@@ -145,7 +146,7 @@ foreach ($r in 'B', 'C') {
     Write-Log 'setup' ".vscode/tasks.json existe déjà dans $d : non modifié (lance watch.ps1 à la main)." Yellow
   } else {
     $cmdClaude = "claude --model $($i.Model) ""Applique ton role defini dans CLAUDE.local.md, puis attends les instructions."""
-    $cmdWatch = "powershell -NoProfile -ExecutionPolicy Bypass -File ""$watch"" -RepoDir ""`${workspaceFolder}"" -Role $r -Mode $Mode"
+    $cmdWatch = "powershell -NoProfile -ExecutionPolicy Bypass -File ""$watch"" -RepoDir ""`${workspaceFolder}"" -Role $r -Mode $Mode -PauseFile ""$pauseFile"""
     $tasks = [ordered]@{
       version = '2.0.0'
       '//' = 'orchestrator-ia'
@@ -170,6 +171,6 @@ if ($hasCode) {
   Write-Log 'setup' 'VS Code ouvert sur B et C (extension Orchestrator Bridge chargée). À la première ouverture, autorise « Allow Automatic Tasks » : Claude et le watcher démarrent alors tout seuls dans le terminal.' Green
 }
 $mon = Join-Path $PSScriptRoot 'monitor.ps1'
-Start-Process powershell -ArgumentList @('-NoExit', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$mon`"", '-RepoDir', "`"$($dirs.M)`"")
+Start-Process powershell -ArgumentList @('-NoExit', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$mon`"", '-RepoDir', "`"$($dirs.M)`"", '-PauseFile', "`"$pauseFile`"", '-WorkDirsCsv', "`"$($dirs.B),$($dirs.C)`"")
 Write-Log 'setup' 'Fenêtre monitor ouverte : saisis le quota (touche b) avant de démarrer le travail.' Green
 Write-Log 'setup' "Côté cloud : dis à la session A de travailler sur la branche '$Branch' de $RepoUrl et de suivre roles/A-orchestrateur.md." Cyan

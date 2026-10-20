@@ -15,6 +15,7 @@ param(
   [int]$SettleSec = 20,
   [bool]$ClearFirst = $true,
   [string]$ExtraTools = '',
+  [string]$PauseFile = '',
   [switch]$Once
 )
 . (Join-Path $PSScriptRoot 'lib.ps1')
@@ -28,7 +29,6 @@ $tools = $cfg.Tools
 if ($ExtraTools) { $tools = "$tools,$ExtraTools" }
 $tag = "watch-$Role"
 $stateFile = Join-Path $RepoDir ".git\orchestrator-$Role.json"
-$inbox = Join-Path $RepoDir '.git\orchestrator-inbox'
 
 # jobs[clé] = @{ n = nb d'envois ; t = dernier envoi (UTC, ISO) }
 $jobs = @{}
@@ -48,7 +48,11 @@ while ($true) {
     $state = Read-Json (Join-Path $RepoDir 'state.json')
     $budget = Get-Budget $RepoDir
     $dec = Get-BudgetDecision $budget $Role
-    if ($state -and $state.status -eq 'paused_budget') {
+    $ctl = Get-Control $RepoDir $PauseFile
+    if ($ctl.Paused) {
+      Say "PAUSE demandée ($($ctl.Reason)) : aucune nouvelle tâche." Yellow
+      if ($jobs.Count -gt 0) { $jobs = @{}; Save-Jobs }   # au retour, les tâches interrompues seront renvoyées
+    } elseif ($state -and $state.status -eq 'paused_budget') {
       Say 'Pause décidée par A (paused_budget).' Yellow
     } elseif ($dec -eq 'stale') {
       Say 'Quota inconnu ou périmé : saisis-le dans la fenêtre monitor (touche b).' Yellow
@@ -78,13 +82,10 @@ while ($true) {
           if ($Mode -eq 'inject') {
             Write-Log $tag "Tâche $key : envoi dans $SettleSec s (laisse Claude finir ce qu'il fait)..." Green
             Start-Sleep -Seconds $SettleSec
-            New-Item -ItemType Directory -Force -Path $inbox | Out-Null
             $lines = @()
             if ($ClearFirst) { $lines += '/clear' }
             $lines += ($prompt -replace '\s+', ' ')
-            $name = (Get-Date).ToString('yyyyMMddHHmmssfff')
-            Write-Utf8 (Join-Path $inbox "$name.tmp") ($lines -join "`n")
-            Move-Item (Join-Path $inbox "$name.tmp") (Join-Path $inbox "$name.txt")
+            Send-ToClaude $RepoDir $lines
             Write-Log $tag "Message déposé ($($cfg.Model), essai $($n + 1)/$MaxAttempts) : l'extension le tape dans le terminal Claude." Green
           } elseif ($Mode -eq 'notify') {
             Set-Clipboard -Value $prompt
